@@ -8,6 +8,7 @@ import {
   WagmiProvider,
   useAccount,
   useDisconnect,
+  useReadContract,
 } from "wagmi";
 
 const client = new QueryClient();
@@ -16,9 +17,64 @@ function App() {
     <WagmiProvider config={config}>
       <QueryClientProvider client={client}>
         <ConnectWallet />
+        <TotalSupply />
+        <BalanceOf />
       </QueryClientProvider>
     </WagmiProvider>
   );
+}
+
+function TotalSupply() {
+  const { data, isLoading, error } = useReadContract({
+    address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    abi: [
+      {
+        constant: true,
+        inputs: [],
+        name: "totalSupply",
+        outputs: [{ name: "", type: "uint256" }],
+        payable: false,
+        stateMutability: "view",
+        type: "function",
+      },
+    ],
+    functionName: "totalSupply",
+  });
+  if (isLoading) {
+    return <div>loading..</div>;
+  }
+  if (error) return <div>Error loading balance</div>;
+
+  const supply = data ? Number(data) / 1_000_000 : 0;
+  return <div>Total supply of USDT is {supply.toLocaleString()}</div>;
+}
+
+function BalanceOf() {
+  const { address } = useAccount();
+  const { data, isLoading, error } = useReadContract({
+    address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
+    abi: [
+      {
+        constant: true,
+        inputs: [{ name: "who", type: "address" }],
+        name: "balanceOf",
+        outputs: [{ name: "", type: "uint256" }],
+        payable: false,
+        stateMutability: "view",
+        type: "function",
+      },
+    ],
+    functionName: "balanceOf",
+    args: ["0x004254ce76bef23930864a77babd7bfa996ce086"],
+    chainId: 1,
+  });
+  if (isLoading) {
+    return <div>loading..</div>;
+  }
+  //   if (error) return <div>Error loading balance</div>;
+
+  const balance = data ? Number(data) / 1_000_000 : 0;
+  return <div>Balance is {balance.toLocaleString()} USDT</div>;
 }
 
 function ConnectWallet() {
