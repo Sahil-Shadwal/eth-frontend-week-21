@@ -10,6 +10,9 @@ import {
   useDisconnect,
   useReadContract,
 } from "wagmi";
+import Whale from "./whale";
+import { formatUnits } from "viem";
+import UsdtBalance from "./usdtBalace";
 
 const client = new QueryClient();
 function App() {
@@ -19,6 +22,8 @@ function App() {
         <ConnectWallet />
         <TotalSupply />
         <BalanceOf />
+        <Account />
+        <UsdtBalance />
       </QueryClientProvider>
     </WagmiProvider>
   );
@@ -55,26 +60,35 @@ function BalanceOf() {
     address: "0xdAC17F958D2ee523a2206206994597C13D831ec7",
     abi: [
       {
-        constant: true,
-        inputs: [{ name: "who", type: "address" }],
         name: "balanceOf",
-        outputs: [{ name: "", type: "uint256" }],
-        payable: false,
-        stateMutability: "view",
         type: "function",
+        stateMutability: "view",
+        inputs: [{ name: "account", type: "address" }],
+        outputs: [{ type: "uint256" }],
       },
     ],
     functionName: "balanceOf",
-    args: ["0x004254ce76bef23930864a77babd7bfa996ce086"],
+    args: [address ?? "0x833eBFc380f63Dfa450bFC2517B60Fb155e5Fc85"],
     chainId: 1,
+    account: undefined,
   });
   if (isLoading) {
     return <div>loading..</div>;
   }
-  //   if (error) return <div>Error loading balance</div>;
+  if (error) return <div>Error loading balance: {error.message}</div>;
 
   const balance = data ? Number(data) / 1_000_000 : 0;
   return <div>Balance is {balance.toLocaleString()} USDT</div>;
+}
+
+function Account() {
+  const { address } = useAccount();
+
+  return (
+    <div>
+      {address ? "You are connected " + address : "You are not connected"}
+    </div>
+  );
 }
 
 function ConnectWallet() {
